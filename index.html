@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Kerala Election Run</title>
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  text-align:center;
+  font-family:Arial;
+  background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height:100vh;
+  padding:20px;
+}
+
+h1 { color:#fff; margin:20px 0; }
+
+/* Menu */
+#menu {
+  background:#fff;
+  width:600px;
+  margin:50px auto;
+  padding:40px;
+  border-radius:10px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+#menu h2 { color:#333; margin-bottom:30px; font-size:24px; }
+
+#menu p { color:#666; margin-bottom:20px; font-size:16px; }
+
+.player-options {
+  display:flex;
+  justify-content:space-around;
+  gap:20px;
+  margin:30px 0;
+  flex-wrap:wrap;
+}
+
+.player-btn {
+  width:140px;
+  padding:20px;
+  border:3px solid #ddd;
+  border-radius:10px;
+  background:#f5f5f5;
+  cursor:pointer;
+  font-size:16px;
+  font-weight:bold;
+  transition:all 0.3s;
+  text-decoration:none;
+}
+
+.player-btn:hover {
+  transform:translateY(-5px);
+  box-shadow:0 5px 15px rgba(0,0,0,0.2);
+}
+
+.player-btn.ldf { border-color:#d4202a; background:transparent; color:#d4202a; }
+.player-btn.udf { border-color:#1e5a96; background:transparent; color:#1e5a96; }
+.player-btn.bjp { border-color:#ff9900; background:transparent; color:#ff9900; }
+
+.player-icon { font-size:48px; margin-bottom:10px; }
+
+/* Game */
+#game {
+  width:900px;
+  height:380px;
+  margin:auto;
+  border:4px solid #333;
+  position:relative;
+  overflow:hidden;
+  background:#fff;
+  border-radius:5px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+  display:none;
+}
+
+#game.hidden { display:none; }
+#game.show { display:block; }
+
+#bg {
+  position:absolute;
+  width:200%;
+  height:100%;
+  background:linear-gradient(#a5d6a7,#e8f5e9);
+  animation:bg 6s linear infinite;
+}
+@keyframes bg { from{left:0} to{left:-100%} }
+
+#player {
+  width:70px;
+  height:70px;
+  position:absolute;
+  bottom:0;
+  left:50px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:50px;
+  z-index:10;
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:center;
+  mix-blend-mode:darken;
+}
+
+#player::after {
+  content:attr(data-flag);
+  position:absolute;
+  font-size:24px;
+  top:-5px;
+  right:-5px;
+  display:none;
+}
+
+#obstacle {
+  width:90px;
+  height:70px;
+  position:absolute;
+  bottom:0;
+  right:-150px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  text-align:center;
+  background:#f0f0f0;
+  border:2px solid #999;
+  border-radius:5px;
+  padding:5px;
+  z-index:5;
+}
+
+.seat-icon { font-size:30px; margin-bottom:3px; }
+
+#score {
+  position:absolute;
+  top:15px;
+  left:15px;
+  font-weight:bold;
+  font-size:16px;
+  z-index:20;
+}
+
+#player-info {
+  position:absolute;
+  top:15px;
+  right:15px;
+  font-weight:bold;
+  font-size:14px;
+  z-index:20;
+}
+
+.hidden { display:none !important; }
+
+#menu.hidden { display:none; }
+
+#gameOverBox {
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  background:#fff;
+  padding:40px;
+  border-radius:10px;
+  text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+  z-index:100;
+  display:none;
+}
+
+#gameOverBox.show { display:block; }
+
+#gameOverBox h2 { color:#333; font-size:32px; margin-bottom:20px; }
+
+#gameOverBox p { color:#666; font-size:18px; margin:10px 0; }
+
+#restartBtn {
+  margin-top:20px;
+  padding:12px 30px;
+  font-size:16px;
+  background:#667eea;
+  color:#fff;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+#restartBtn:hover { background:#764ba2; }
+
+</style>
+</head>
+
+<body>
+
+<h1>🗳️ Kerala Election Run 🏃</h1>
+
+<div id="menu">
+  <h2>Select Your Party</h2>
+  <p>Choose your political party and run through 140 assembly seats!</p>
+
+  <div class="player-options">
+    <button class="player-btn ldf" onclick="startGame('LDF')">
+      <div class="player-icon"><img src="ldf.png" style="width:48px;height:48px;"></div>
+      <div>LDF</div>
+    </button>
+    <button class="player-btn udf" onclick="startGame('UDF')">
+      <div class="player-icon"><img src="udf.png" style="width:48px;height:48px;"></div>
+      <div>UDF</div>
+    </button>
+    <button class="player-btn bjp" onclick="startGame('BJP')">
+      <div class="player-icon"><img src="bjp.png" style="width:48px;height:48px;"></div>
+      <div>BJP</div>
+    </button>
+  </div>
+</div>
+
+<div id="game">
+  <div id="bg"></div>
+  <div id="score">Seats: 0 / 140</div>
+  <div id="player-info"></div>
+  <div id="player" data-flag=""></div>
+  <div id="obstacle">
+    <div class="seat-icon">🏛️</div>
+    <span id="label"></span>
+  </div>
+  <div id="gameOverBox">
+    <h2 id="gameOverTitle"></h2>
+    <p id="gameOverMessage"></p>
+    <button id="restartBtn" onclick="location.reload()">Restart Game</button>
+  </div>
+</div>
+
+<script>
+// Audio Context and Sound Manager
+const AudioManager = {
+  audioContext: null,
+  
+  init() {
+    if (!this.audioContext) {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return this.audioContext;
+  },
+  
+  playJumpSound() {
+    const ctx = this.init();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.frequency.setValueAtTime(400, now);
+    osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+    
+    osc.start(now);
+    osc.stop(now + 0.1);
+  },
+  
+  playScoreSound() {
+    const ctx = this.init();
+    const now = ctx.currentTime;
+    const frequencies = [523.25, 659.25, 783.99]; // C, E, G notes
+    
+    frequencies.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.frequency.setValueAtTime(freq, now + i * 0.05);
+      gain.gain.setValueAtTime(0.2, now + i * 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.05 + 0.15);
+      
+      osc.start(now + i * 0.05);
+      osc.stop(now + i * 0.05 + 0.15);
+    });
+  },
+  
+  playCollisionSound() {
+    const ctx = this.init();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.frequency.setValueAtTime(200, now);
+    osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+    
+    osc.start(now);
+    osc.stop(now + 0.3);
+  },
+  
+  playVictorySound() {
+    const ctx = this.init();
+    const now = ctx.currentTime;
+    const frequencies = [523.25, 659.25, 783.99, 1046.5]; // C, E, G, C higher
+    
+    frequencies.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.frequency.setValueAtTime(freq, now + i * 0.1);
+      gain.gain.setValueAtTime(0.25, now + i * 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.3);
+      
+      osc.start(now + i * 0.1);
+      osc.stop(now + i * 0.1 + 0.3);
+    });
+  }
+};
+
+// All 140 Kerala Assembly Seats
+const seats = [
+  "Manjeshwar","Attingal","Chirayinkeezhu","Thiruvananthapuram","Nemom",
+  "Kollam","Kottayam","Kottakkal","Pathanamthitta","Alappuzha",
+  "Kozhikode","Kannur","Kasaragod","Aranadi","Wayanad",
+  "Kothamangalam","Palakkad","Attapadi","Nchngannur","Perintalmanna",
+  "Thrissur","Kodungallur","Cherthala","Nellikkunnu","Ernakulam",
+  "Kakanad","Paravur","Velipaparambu","Vaipin","Kochi",
+  "Cappas","Kumbalam","Puthukkad","Valarapatanam","Thiruvanantharam",
+  "Vikarabadh","Kanji","Kottapara","Payyanur","Kampam",
+  "Perumbavoor","Pipal","Neeramiri","Pamban","Thirur",
+  "Vazhapunnyuri","Nileswaram","Mappanati","Pirannai","Thepp",
+  "Irinjalakkudam","Talipparamba","Anacheri","Talapelli","Kamari",
+  "Ponnani","Kayippaya","Chettuva","Angamaly","Kayikkulam",
+  "Kannikkot","Ethmadi","Perupathappu","Konni","Aror",
+  "Puthuppalli","Payaly","Karthikapally","Kirand","Kottayam",
+  "Westfort","Pattamathi","Vemperi","Koovva","Nethravaathi",
+  "Kayikkar","Valiyavila","Karyath","Kizhakkott","Arot",
+  "Santacruz","Balramapuram","Vayanad","Kumbanaud","Thayyil",
+  "Neerali","Kothamangalam","Uduki","Kattappan","Kovalam",
+  "Kodikheri","Kannappoor","Neyartikar","Unnaoor","Swathi",
+  "Rashyya","Sadhya","Vidyaranyam","Kumpra","Periyar",
+  "Perumpali","Karnakk","Kalippinadi","Adoor","Sridharpur",
+  "Karathoor","Harippad","Swapnagiri","Arantuk","Karthikappapuram",
+  "Vengikal","Trippunithra","Kakanad","Periyarnadire","Kamar",
+  "Pappanangadi","Palayam","Kapputhali","Karakamanai","Nellikkunnu",
+  "Pulikali","Ariyapuram","Trishinvasi","Karam","Kariveli",
+  "Pariyaram","Perinad","Irinbaranad","Kulathupuzha","Neduguadi",
+  "Kanjirappuzha","Kayarikkod","Thirunelli","Devayu","Kalapanad",
+  "Kunadi","Karipad","Kaithamkod","Mayanad","Parapudan",
+  "Karunaghopili","Thury","Vippin","Komanakod","Parapokkali"
+];
+
+let currentPlayer = "";
+let player = document.getElementById("player");
+let obstacle = document.getElementById("obstacle");
+let label = document.getElementById("label");
+let scoreBox = document.getElementById("score");
+let playerInfo = document.getElementById("player-info");
+let gameDiv = document.getElementById("game");
+let menuDiv = document.getElementById("menu");
+
+let index = 0, score = 0;
+let velocity = 0, gravity = 0.6, isJumping = false;
+let gameOver = false;
+let moveInterval = null;
+
+let gameOverBox = document.getElementById("gameOverBox");
+let gameOverTitle = document.getElementById("gameOverTitle");
+let gameOverMessage = document.getElementById("gameOverMessage");
+
+const partyData = {
+  "LDF": { image: "ldf.png", color: "#d4202a" },
+  "UDF": { image: "udf.png", color: "#1e5a96" },
+  "BJP": { image: "bjp.png", color: "#ff9900" }
+};
+
+function startGame(party) {
+  gameOver = false;
+  index = 0;
+  score = 0;
+  currentPlayer = party;
+  menuDiv.classList.add("hidden");
+  gameDiv.classList.add("show");
+  gameOverBox.classList.remove("show");
+  scoreBox.innerText = "Seats: 0 / 140";
+
+  let partyInfo = partyData[party];
+  player.style.backgroundImage = "url(" + partyInfo.image + ")";
+  player.textContent = "";
+  player.setAttribute("data-flag", "");
+  player.className = party.toLowerCase();
+  playerInfo.textContent = party;
+  playerInfo.style.color = partyInfo.color;
+
+  nextObstacle();
+  moveObstacle();
+}
+
+function nextObstacle() {
+  if (index >= seats.length) {
+    gameOver = true;
+    AudioManager.playVictorySound();
+    gameOverTitle.textContent = "🏆 You Won!";
+    gameOverMessage.textContent = "All 140 seats conquered!";
+    gameOverBox.classList.add("show");
+  }
+  label.innerText = seats[index++];
+}
+
+function moveObstacle() {
+  obstacle.style.right = "-150px";
+  moveInterval = setInterval(() => {
+    if (gameOver) {
+      clearInterval(moveInterval);
+      return;
+    }
+    let r = parseInt(obstacle.style.right);
+    obstacle.style.right = (r + 4) + "px";
+
+    if (r > 900) {
+      clearInterval(moveInterval);
+      score++;
+      AudioManager.playScoreSound();
+      scoreBox.innerText = "Seats: " + score + " / 140";
+      nextObstacle();
+      moveObstacle();
+    }
+  }, 20);
+}
+
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && !isJumping) {
+    velocity = 20;
+    isJumping = true;
+    AudioManager.playJumpSound();
+  }
+});
+
+setInterval(() => {
+  if (gameOver) return;
+
+  let bottom = parseFloat(player.style.bottom || "0");
+
+  if (isJumping) {
+    velocity -= gravity;
+    bottom += velocity;
+
+    if (bottom <= 0) {
+      bottom = 0;
+      isJumping = false;
+    }
+    player.style.bottom = bottom + "px";
+  }
+
+  let p = player.getBoundingClientRect();
+  let o = obstacle.getBoundingClientRect();
+
+  if (p.right > o.left && p.left < o.right && p.bottom > o.top) {
+    gameOver = true;
+    AudioManager.playCollisionSound();
+    gameOverTitle.textContent = "💥 Game Over!";
+    gameOverMessage.textContent = "Seats Won: " + score + " / 140";
+    gameOverBox.classList.add("show");
+  }
+
+}, 16);
+
+</script>
+
+</body>
+</html>
