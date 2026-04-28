@@ -2,17 +2,40 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no, minimal-ui">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Election Run">
+<meta name="theme-color" content="#667eea">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Kerala Election Run</title>
+<link rel="manifest" href="manifest.json">
 
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
+
+html {
+  height:100%;
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  user-select:none;
+  overscroll-behavior:none;
+  --vh: 1vh;
+}
 
 body {
   text-align:center;
   font-family:Arial;
   background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height:100vh;
+  height:100vh;
   padding:20px;
+  overflow:hidden;
+  position:fixed;
+  width:100%;
+  touch-action:none;
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
 }
 
 h1 { color:#fff; margin:20px 0; }
@@ -77,61 +100,96 @@ h1 { color:#fff; margin:20px 0; }
   box-shadow:0 10px 30px rgba(0,0,0,0.3);
   display:none;
   touch-action:none;
+  -webkit-touch-callout:none;
 }
 
 #game.hidden { display:none; }
 #game.show { display:block; }
 
+@supports (height: 100dvh) {
+  @media (max-width:768px) {
+    #game {
+      height:100dvh;
+    }
+  }
+}
+
 /* Mobile Responsive */
 @media (max-width:768px) {
   body {
-    padding:10px;
+    padding:0;
     min-height:100vh;
+    height:100vh;
     display:flex;
     flex-direction:column;
+    position:fixed;
+    width:100%;
+    top:0;
+    left:0;
+    overflow:hidden;
+    background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
   
   h1 {
-    margin:10px 0;
-    font-size:20px;
+    margin:15px 0 10px 0;
+    font-size:22px;
+    flex-shrink:0;
   }
   
   #game {
     width:100vw;
-    height:60vh;
+    height:auto;
+    flex:1;
     max-height:none;
     max-width:none;
     margin:0;
-    margin-left:-10px;
-    margin-right:-10px;
+    padding:0;
+    border:none;
     border-radius:0;
-    flex:1;
+    margin-left:0;
+    margin-right:0;
+    position:relative;
   }
   
   #menu {
-    width:95vw;
+    width:100vw;
     max-width:100%;
-    padding:20px;
-    margin:20px auto;
+    padding:20px 15px;
+    margin:0;
+    border-radius:0;
+    max-height:85vh;
+    overflow-y:auto;
+    flex-shrink:0;
+  }
+  
+  #menu h2 {
+    font-size:20px;
+    margin-bottom:15px;
+  }
+  
+  #menu p {
+    font-size:14px;
+    margin-bottom:15px;
   }
   
   .player-options {
     gap:10px;
+    margin:20px 0;
   }
   
   .player-btn {
-    width:90px;
-    padding:12px 8px;
-    font-size:12px;
+    width:100px;
+    padding:15px 8px;
+    font-size:13px;
   }
   
   .player-icon { 
-    font-size:32px;
+    font-size:40px;
   }
   
   .player-icon img {
-    width:40px !important;
-    height:40px !important;
+    width:45px !important;
+    height:45px !important;
   }
   
   #score {
@@ -141,38 +199,39 @@ h1 { color:#fff; margin:20px 0; }
   }
   
   #player-info {
-    font-size:13px;
+    font-size:12px;
     top:8px;
     right:8px;
   }
   
   #player {
-    width:60px;
-    height:60px;
-    font-size:40px;
-    left:30px;
+    width:55px;
+    height:55px;
+    font-size:38px;
+    left:25px;
   }
   
   #obstacle {
-    width:70px;
-    height:55px;
-    font-size:10px;
+    width:65px;
+    height:50px;
+    font-size:9px;
   }
   
   .seat-icon { 
-    font-size:24px;
+    font-size:22px;
     margin-bottom:2px;
   }
   
   #touchControl {
-    width:80px;
-    height:80px;
-    bottom:15px;
+    width:85px;
+    height:85px;
+    bottom:20px;
   }
   
   #gameOverBox {
     padding:30px 20px;
     width:90vw;
+    max-width:90vw;
   }
   
   #gameOverBox h2 {
@@ -180,11 +239,11 @@ h1 { color:#fff; margin:20px 0; }
   }
   
   #gameOverBox p {
-    font-size:16px;
+    font-size:15px;
   }
   
   #restartBtn {
-    padding:10px 20px;
+    padding:10px 25px;
     font-size:14px;
   }
 }
@@ -366,6 +425,38 @@ h1 { color:#fff; margin:20px 0; }
 </div>
 
 <script>
+// Prevent scrolling and zoom on mobile
+document.addEventListener('touchmove', (e) => {
+  if (e.target.id !== 'game') {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+// Handle viewport height on mobile
+function handleViewportHeight() {
+  let vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', vh + 'px');
+  
+  const menu = document.getElementById('menu');
+  const game = document.getElementById('game');
+  
+  if (window.innerWidth <= 768) {
+    const h1Height = document.querySelector('h1').offsetHeight;
+    const totalHeight = window.innerHeight;
+    
+    if (menu && !menu.classList.contains('hidden')) {
+      game.style.height = (totalHeight - h1Height) + 'px';
+    }
+  }
+}
+
+window.addEventListener('resize', handleViewportHeight);
+window.addEventListener('orientationchange', () => {
+  setTimeout(handleViewportHeight, 100);
+});
+
+handleViewportHeight();
+
 // Audio Context and Sound Manager
 const AudioManager = {
   audioContext: null,
@@ -526,6 +617,12 @@ function startGame(party) {
   gameDiv.classList.add("show");
   gameOverBox.classList.remove("show");
   scoreBox.innerText = "Seats: 0 / 140";
+  
+  // Remove body scroll lock when game starts
+  if (isMobile()) {
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
+  }
 
   let partyInfo = partyData[party];
   player.style.backgroundImage = "url(" + partyInfo.image + ")";
@@ -650,6 +747,13 @@ setInterval(() => {
   }
 
 }, 16);
+
+// Register Service Worker for PWA functionality
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {
+    // SW registration failed, app will work without offline support
+  });
+}
 
 </script>
 
