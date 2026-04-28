@@ -6,6 +6,7 @@
 
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
+
 body {
   text-align:center;
   font-family:Arial;
@@ -64,7 +65,8 @@ h1 { color:#fff; margin:20px 0; }
 
 /* Game */
 #game {
-  width:900px;
+  width:90vw;
+  max-width:900px;
   height:380px;
   margin:auto;
   border:4px solid #333;
@@ -74,10 +76,63 @@ h1 { color:#fff; margin:20px 0; }
   border-radius:5px;
   box-shadow:0 10px 30px rgba(0,0,0,0.3);
   display:none;
+  touch-action:none;
 }
 
 #game.hidden { display:none; }
 #game.show { display:block; }
+
+/* Mobile Responsive */
+@media (max-width:768px) {
+  #game {
+    width:100vw;
+    height:auto;
+    aspect-ratio:900/380;
+    max-width:none;
+  }
+  
+  #menu {
+    width:90vw;
+    max-width:500px;
+    padding:30px 20px;
+  }
+  
+  .player-options {
+    gap:10px;
+  }
+  
+  .player-btn {
+    width:100px;
+    padding:15px;
+    font-size:14px;
+  }
+  
+  .player-icon { font-size:36px; }
+  
+  #score, #player-info {
+    font-size:12px;
+  }
+}
+
+/* Touch Controls Button */
+#touchControl {
+  display:none;
+  position:absolute;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  width:100px;
+  height:100px;
+  background:rgba(0,0,0,0.3);
+  border-radius:50%;
+  z-index:50;
+  cursor:pointer;
+  border:2px solid rgba(255,255,255,0.5);
+  user-select:none;
+}
+
+#touchControl.show { display:block; }
+#touchControl.active { background:rgba(0,0,0,0.6); border-color:rgba(255,255,255,0.9); }
 
 #bg {
   position:absolute;
@@ -227,6 +282,7 @@ h1 { color:#fff; margin:20px 0; }
     <div class="seat-icon">🏛️</div>
     <span id="label"></span>
   </div>
+  <div id="touchControl"></div>
   <div id="gameOverBox">
     <h2 id="gameOverTitle"></h2>
     <p id="gameOverMessage"></p>
@@ -366,6 +422,7 @@ let scoreBox = document.getElementById("score");
 let playerInfo = document.getElementById("player-info");
 let gameDiv = document.getElementById("game");
 let menuDiv = document.getElementById("menu");
+let touchControl = document.getElementById("touchControl");
 
 let index = 0, score = 0;
 let velocity = 0, gravity = 0.6, isJumping = false;
@@ -375,6 +432,9 @@ let moveInterval = null;
 let gameOverBox = document.getElementById("gameOverBox");
 let gameOverTitle = document.getElementById("gameOverTitle");
 let gameOverMessage = document.getElementById("gameOverMessage");
+
+// Detect mobile
+const isMobile = () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 const partyData = {
   "LDF": { image: "ldf.png", color: "#d4202a" },
@@ -399,6 +459,11 @@ function startGame(party) {
   player.className = party.toLowerCase();
   playerInfo.textContent = party;
   playerInfo.style.color = partyInfo.color;
+
+  // Show touch control on mobile
+  if (isMobile()) {
+    touchControl.classList.add("show");
+  }
 
   nextObstacle();
   moveObstacle();
@@ -443,6 +508,43 @@ document.addEventListener("keydown", e => {
     AudioManager.playJumpSound();
   }
 });
+
+// Touch Controls
+function jump() {
+  if (!isJumping && !gameOver) {
+    velocity = 20;
+    isJumping = true;
+    AudioManager.playJumpSound();
+  }
+}
+
+// Touch control button
+touchControl.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  touchControl.classList.add("active");
+  jump();
+});
+
+touchControl.addEventListener("touchend", (e) => {
+  e.preventDefault();
+  touchControl.classList.remove("active");
+});
+
+// Also allow click for testing on desktop
+touchControl.addEventListener("click", () => {
+  jump();
+});
+
+// Tap anywhere on game area (alternative control method)
+gameDiv.addEventListener("touchstart", (e) => {
+  if (e.target === touchControl) return;
+  jump();
+}, { passive: false });
+
+// Prevent scrolling on game area
+gameDiv.addEventListener("touchmove", (e) => {
+  e.preventDefault();
+}, { passive: false });
 
 setInterval(() => {
   if (gameOver) return;
