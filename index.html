@@ -84,17 +84,35 @@ h1 { color:#fff; margin:20px 0; }
 
 /* Mobile Responsive */
 @media (max-width:768px) {
+  body {
+    padding:10px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  
+  h1 {
+    margin:10px 0;
+    font-size:20px;
+  }
+  
   #game {
     width:100vw;
-    height:auto;
-    aspect-ratio:900/380;
+    height:60vh;
+    max-height:none;
     max-width:none;
+    margin:0;
+    margin-left:-10px;
+    margin-right:-10px;
+    border-radius:0;
+    flex:1;
   }
   
   #menu {
-    width:90vw;
-    max-width:500px;
-    padding:30px 20px;
+    width:95vw;
+    max-width:100%;
+    padding:20px;
+    margin:20px auto;
   }
   
   .player-options {
@@ -102,15 +120,72 @@ h1 { color:#fff; margin:20px 0; }
   }
   
   .player-btn {
-    width:100px;
-    padding:15px;
-    font-size:14px;
+    width:90px;
+    padding:12px 8px;
+    font-size:12px;
   }
   
-  .player-icon { font-size:36px; }
+  .player-icon { 
+    font-size:32px;
+  }
   
-  #score, #player-info {
-    font-size:12px;
+  .player-icon img {
+    width:40px !important;
+    height:40px !important;
+  }
+  
+  #score {
+    font-size:14px;
+    top:8px;
+    left:8px;
+  }
+  
+  #player-info {
+    font-size:13px;
+    top:8px;
+    right:8px;
+  }
+  
+  #player {
+    width:60px;
+    height:60px;
+    font-size:40px;
+    left:30px;
+  }
+  
+  #obstacle {
+    width:70px;
+    height:55px;
+    font-size:10px;
+  }
+  
+  .seat-icon { 
+    font-size:24px;
+    margin-bottom:2px;
+  }
+  
+  #touchControl {
+    width:80px;
+    height:80px;
+    bottom:15px;
+  }
+  
+  #gameOverBox {
+    padding:30px 20px;
+    width:90vw;
+  }
+  
+  #gameOverBox h2 {
+    font-size:24px;
+  }
+  
+  #gameOverBox p {
+    font-size:16px;
+  }
+  
+  #restartBtn {
+    padding:10px 20px;
+    font-size:14px;
   }
 }
 
@@ -482,6 +557,7 @@ function nextObstacle() {
 
 function moveObstacle() {
   obstacle.style.right = "-150px";
+  const gameWidth = gameDiv.offsetWidth;
   moveInterval = setInterval(() => {
     if (gameOver) {
       clearInterval(moveInterval);
@@ -490,7 +566,7 @@ function moveObstacle() {
     let r = parseInt(obstacle.style.right);
     obstacle.style.right = (r + 4) + "px";
 
-    if (r > 900) {
+    if (r > gameWidth) {
       clearInterval(moveInterval);
       score++;
       AudioManager.playScoreSound();
